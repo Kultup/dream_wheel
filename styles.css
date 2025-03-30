@@ -216,7 +216,7 @@ body.night-time {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
-    margin-top: 20px;
+    margin-top: 5px;
 }
 
 #roll-button:hover {
