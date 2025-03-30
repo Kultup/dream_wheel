@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="uk">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Країна мрій - Гра</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+</head>
+
+<body>
+    <!-- Денні елементи -->
+    <div class="sun"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    
+    <!-- Нічні елементи -->
+    <div class="moon"></div>
+    <div class="stars"></div>
+    <div class="shooting-stars"></div>
+
+    <div id="game-container">
+        <div class="logo-container">
+            <img src="logo.png" alt="Країна мрій" class="logo">
+        </div>
+        
+        <div id="board">
+            <!-- Клітинки будуть додані через JavaScript -->
+        </div>
+
+        <div id="controls">
+            <div class="dice-container">
+                <div class="dice-row">
+                    <div class="dice" id="dice1">
+                        <div class="face front" data-value="1">1</div>
+                        <div class="face back" data-value="6">6</div>
+                        <div class="face right" data-value="2">2</div>
+                        <div class="face left" data-value="5">5</div>
+                        <div class="face top" data-value="3">3</div>
+                        <div class="face bottom" data-value="4">4</div>
+                    </div>
+                    <div class="dice" id="dice2">
+                        <div class="face front" data-value="1">1</div>
+                        <div class="face back" data-value="6">6</div>
+                        <div class="face right" data-value="2">2</div>
+                        <div class="face left" data-value="5">5</div>
+                        <div class="face top" data-value="3">3</div>
+                        <div class="face bottom" data-value="4">4</div>
+                    </div>
+                </div>
+                <button id="roll-button">🎲 Кинути кубики 🎲</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="prize-modal" class="modal">
+        <div class="modal-content">
+            <div class="prize-header">
+                <h2>🎉 Вітаємо! 🎉</h2>
+                <div class="sparkles"></div>
+            </div>
+            <p id="prize-text"></p>
+            <button id="close-modal">Чудово! ✨</button>
+        </div>
+    </div>
+
+    <script>
+        // Визначення часу доби та встановлення відповідного класу
+        function setTimeOfDay() {
+            const hour = new Date().getHours();
+            const isDay = hour >= 6 && hour < 20; // День з 6:00 до 20:00
+
+            document.body.classList.remove('day-time', 'night-time');
+            document.body.classList.add(isDay ? 'day-time' : 'night-time');
+
+            // Позиціонування сонця/місяця
+            const celestialBody = isDay ? document.querySelector('.sun') : document.querySelector('.moon');
+            const progress = isDay ? (hour - 6) / 14 : (hour < 6 ? hour + 4 : hour - 20) / 10;
+            const x = Math.sin(progress * Math.PI) * 40 + 50;
+            const y = Math.cos(progress * Math.PI) * 20 + 20;
+            
+            celestialBody.style.left = `${x}%`;
+            celestialBody.style.top = `${y}%`;
+        }
+
+        // Створення зірок
+        function createStars() {
+            const stars = document.querySelector('.stars');
+            stars.innerHTML = ''; // Очищаємо попередні зірки
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 3}s`;
+                stars.appendChild(star);
+            }
+        }
+
+        // Створення падаючих зірок
+        function createShootingStars() {
+            const container = document.querySelector('.shooting-stars');
+            
+            function createStar() {
+                const star = document.createElement('div');
+                star.style.position = 'absolute';
+                star.style.width = '2px';
+                star.style.height = '2px';
+                star.style.background = 'white';
+                star.style.boxShadow = '0 0 5px white, 0 0 10px white, 0 0 15px white';
+                star.style.top = `${Math.random() * 50}%`;
+                star.style.left = `${Math.random() * 50}%`;
+                star.style.animation = 'shooting-star 1s linear forwards';
+                
+                container.appendChild(star);
+                
+                setTimeout(() => {
+                    star.remove();
+                }, 1000);
+            }
+            
+            // Створюємо нову зірку кожні 3-8 секунд
+            setInterval(() => {
+                if (document.body.classList.contains('night-time')) {
+                    createStar();
+                }
+            }, Math.random() * 5000 + 3000);
+        }
+
+        // Ініціалізація та оновлення кожну хвилину
+        setTimeOfDay();
+        createStars();
+        createShootingStars();
+        setInterval(() => {
+            setTimeOfDay();
+        }, 60000);
+
+        // Список призів
+            const prizes = [
+            "Мілк-шейк для іменинника/ці 🥤",
+            "500 грн у додатку на ресторан 💰",
+            "1 вхід (нарахування в додаток) 🎫",
+            "Десерт на вибір імениннику/ці 🍰",
+            "Аквагрим імениннику (сертифікат) 🎨",
+            "Сертифікат на піцу (в додатку) 🍕",
+            "Привітання від героя (виніс торта) 🦸‍♂️",
+            "Перегляд VR (додаток) 🕶️",
+            "Знижка 5% на банкет по кухні та бару 🍽️",
+            "Покрутити колесо мрій для батьків 🎡",
+            "Кульки-цифра з гелієм 🎈",
+            "Знижка 10% на виїзну анімацію 🎪"
+        ];
+
+        // Створення ігрового поля
+        const board = document.getElementById('board');
+        console.log('Створення ігрового поля');
+
+        prizes.forEach((prize, index) => {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+            cell.id = `cell-${index + 1}`;
+            cell.innerHTML = `<div class="cell-content">${prize}</div>`;
+                board.appendChild(cell);
+            console.log(`Створено клітинку ${index + 1}`);
+        });
+
+        // Створення гравця
+        const player = document.createElement('div');
+        player.id = 'player';
+        player.textContent = '🌈';
+        const startCell = document.getElementById('cell-1');
+        if (startCell) {
+            startCell.appendChild(player);
+            console.log('Гравця розміщено на початковій клітинці');
+        } else {
+            console.error('Не знайдено початкову клітинку');
+        }
+
+        let currentPosition = 1;
+        let isRolling = false;
+
+        // Объект для противоположных значений на кубике
+        const opposites = {
+            1: 6,
+            2: 5,
+            3: 4,
+            4: 3,
+            5: 2,
+            6: 1
+        };
+
+        function setDiceValue(dice, value) {
+            const faces = dice.getElementsByClassName('face');
+            Array.from(faces).forEach(face => {
+                let faceValue = value;
+                
+                if (face.classList.contains('back')) {
+                    faceValue = opposites[value];
+                } else if (face.classList.contains('right')) {
+                    faceValue = value === 6 ? 1 : value + 1;
+                } else if (face.classList.contains('left')) {
+                    faceValue = value === 1 ? 6 : value - 1;
+                } else if (face.classList.contains('top')) {
+                    faceValue = value <= 3 ? value + 3 : value - 3;
+                } else if (face.classList.contains('bottom')) {
+                    faceValue = value <= 3 ? value + 3 : value - 3;
+                }
+                
+                face.textContent = faceValue;
+                face.setAttribute('data-value', faceValue);
+            });
+        }
+
+        function rollDice() {
+            if (isRolling) {
+                console.log('Кубики вже котяться');
+                return;
+            }
+            
+            console.log('Кидаємо кубики');
+            isRolling = true;
+            
+            const dice1 = document.getElementById('dice1');
+            const dice2 = document.getElementById('dice2');
+            
+            // Генерируем значения сразу
+            const value1 = Math.floor(Math.random() * 6) + 1;
+            const value2 = Math.floor(Math.random() * 6) + 1;
+            
+            console.log('Значення кубиків:', value1, value2);
+            
+            // Устанавливаем значения до начала анимации
+            setDiceValue(dice1, value1);
+            setDiceValue(dice2, value2);
+            
+            // Запускаем анимацию
+            dice1.classList.remove('rolling');
+            dice2.classList.remove('rolling');
+            
+            void dice1.offsetWidth;
+            void dice2.offsetWidth;
+            
+            dice1.classList.add('rolling');
+            dice2.classList.add('rolling');
+
+            setTimeout(() => {
+                dice1.classList.remove('rolling');
+                dice2.classList.remove('rolling');
+                movePlayer(value1 + value2);
+                isRolling = false;
+            }, 2000);
+        }
+
+        function movePlayer(steps) {
+            console.log('Початок руху. Кроків:', steps);
+            console.log('Поточна позиція:', currentPosition);
+            
+            const cells = document.getElementsByClassName('cell');
+            const totalCells = cells.length;
+            let stepsLeft = steps;
+            let currentStep = currentPosition;
+            
+            console.log('Всього клітинок:', totalCells);
+            
+            function moveOneStep() {
+                console.log('Крок. Залишилось кроків:', stepsLeft);
+                console.log('Поточний крок:', currentStep);
+                
+                if (stepsLeft > 0) {
+                    // Очищаємо поточну клітинку
+                    if (currentStep >= 1 && currentStep <= totalCells) {
+                        cells[currentStep - 1].classList.remove('cell-highlight');
+                    }
+                    
+                    // Розраховуємо наступну позицію
+                    currentStep++;
+                    if (currentStep > totalCells) {
+                        currentStep = 1;
+                    }
+                    
+                    console.log('Переміщення до клітинки:', currentStep);
+                    
+                    // Переміщуємо гравця
+                    const nextCell = cells[currentStep - 1];
+                    if (nextCell) {
+                        nextCell.classList.add('cell-highlight');
+                        nextCell.appendChild(player);
+                        
+                        // Анімація стрибка
+                        player.style.transform = 'scale(1.2) translateY(-10px)';
+                        setTimeout(() => {
+                            player.style.transform = 'scale(1) translateY(0)';
+                        }, 150);
+                        
+                        stepsLeft--;
+                        currentPosition = currentStep;
+                        
+                        // Продовжуємо рух якщо залишились кроки
+                        if (stepsLeft > 0) {
+                            setTimeout(moveOneStep, 500);
+                        } else {
+                            // Показуємо приз після завершення руху
+                            setTimeout(showPrize, 500);
+                        }
+                    } else {
+                        console.error('Не знайдено клітинку:', currentStep - 1);
+                    }
+                }
+            }
+            
+            moveOneStep();
+        }
+
+        // Показ призу
+            function showPrize() {
+            console.log('Показ призу для позиції:', currentPosition);
+            const modal = document.getElementById('prize-modal');
+            const prizeText = document.getElementById('prize-text');
+            
+            // Перевіряємо чи є приз для поточної позиції
+            if (currentPosition >= 1 && currentPosition <= prizes.length) {
+                prizeText.textContent = `Ваш приз: ${prizes[currentPosition - 1]}`;
+                modal.style.display = 'flex';
+                
+                // Запуск конфетті
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+
+                // Додатковий салют
+                setTimeout(() => {
+                    confetti({
+                        particleCount: 50,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 }
+                    });
+                    confetti({
+                        particleCount: 50,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 }
+                    });
+                }, 500);
+                } else {
+                console.error('Некоректна позиція для призу:', currentPosition);
+            }
+        }
+
+        // Закриття модального вікна
+        document.getElementById('close-modal').addEventListener('click', function() {
+            document.getElementById('prize-modal').style.display = 'none';
+        });
+
+        // Додаємо обробник для кнопки
+        document.getElementById('roll-button').addEventListener('click', function() {
+            console.log('Клік по кнопці кидання кубиків');
+            rollDice();
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1294 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+body.day-time {
+    background: linear-gradient(135deg, #87CEEB, #4CA1AF);
+}
+
+body.night-time {
+    background: linear-gradient(to bottom, #0c1445 0%, #1a237e 100%);
+}
+
+#game-container {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1),
+                0 0 60px rgba(52, 152, 219, 0.2);
+    width: 100%;
+    max-width: 1000px;
+    position: relative;
+    z-index: 1;
+    backdrop-filter: blur(5px);
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+.logo-container {
+    text-align: center;
+    margin-bottom: 30px;
+    animation: float 3s ease-in-out infinite;
+}
+
+.logo {
+    max-width: 300px;
+    height: auto;
+    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+}
+
+#board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+    padding: 20px;
+}
+
+.cell {
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(52, 152, 219, 0.8);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9em;
+    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+.cell:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.2);
+    border-color: #2980b9;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.cell-highlight {
+    animation: highlight 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    background: rgba(255, 255, 255, 0.95) !important;
+    box-shadow: 0 0 20px rgba(52, 152, 219, 0.4),
+                inset 0 0 15px rgba(52, 152, 219, 0.2) !important;
+    transform: scale(1.05);
+}
+
+@keyframes highlight {
+    0% { 
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(52, 152, 219, 0);
+    }
+    50% { 
+        transform: scale(1.1);
+        box-shadow: 0 0 30px rgba(52, 152, 219, 0.6);
+    }
+    100% { 
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(52, 152, 219, 0.4);
+    }
+}
+
+#player {
+    font-size: 2.5em;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    position: relative;
+    z-index: 2;
+    transform-origin: center bottom;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: 0;
+    margin-top: 0;
+}
+
+.dice-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.dice-row {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+}
+
+.dice {
+    width: 60px;
+    height: 60px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+    margin: 10px;
+}
+
+.dice.rolling {
+    animation: simpleDiceRoll 2s ease-out;
+}
+
+@keyframes simpleDiceRoll {
+    0% { transform: rotateX(0) rotateY(0); }
+    100% { transform: rotateX(360deg) rotateY(720deg); }
+}
+
+.face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 2px solid #1976d2;
+    border-radius: 10px;
+    background: white;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #1976d2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: visible;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.front { transform: rotateY(0deg) translateZ(30px); }
+.back { transform: rotateY(180deg) translateZ(30px); }
+.right { transform: rotateY(90deg) translateZ(30px); }
+.left { transform: rotateY(-90deg) translateZ(30px); }
+.top { transform: rotateX(90deg) translateZ(30px); }
+.bottom { transform: rotateX(-90deg) translateZ(30px); }
+
+/* Удаляем стили для точек */
+.face::before,
+.face::after,
+.face span {
+    display: none;
+}
+
+.face[data-value="1"],
+.face[data-value="2"],
+.face[data-value="3"],
+.face[data-value="4"],
+.face[data-value="5"],
+.face[data-value="6"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#roll-button {
+    text-align: center;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 30px;
+    font-size: 1.3em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
+    margin-top: 20px;
+}
+
+#roll-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+    background: linear-gradient(135deg, #2980b9, #3498db);
+}
+
+#roll-button:active {
+    transform: translateY(0);
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 90%;
+    width: 450px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    animation: modalAppear 0.5s ease;
+    backdrop-filter: blur(10px);
+}
+
+@keyframes modalAppear {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.prize-header {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.sparkles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    animation: sparkle 2s linear infinite;
+}
+
+@keyframes sparkle {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.modal h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+}
+
+.modal p {
+    margin-bottom: 30px;
+    font-size: 1.3em;
+    color: #34495e;
+    line-height: 1.5;
+}
+
+#close-modal {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#close-modal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+/* Адаптивність для різних пристроїв */
+@media (max-width: 1200px) {
+    #game-container {
+        max-width: 900px;
+        padding: 20px;
+    }
+    
+    .cell {
+        min-height: 110px;
+        font-size: 0.85em;
+    }
+}
+
+@media (max-width: 992px) {
+    #game-container {
+        max-width: 800px;
+    }
+    
+    .logo {
+        max-width: 250px;
+    }
+    
+    .dice-container {
+        gap: 30px;
+    }
+    
+    .dice {
+        width: 55px;
+        height: 55px;
+    }
+    
+    #roll-button {
+        padding: 12px 35px;
+        font-size: 1.2em;
+    }
+}
+
+@media (max-width: 768px) {
+    #game-container {
+        max-width: 600px;
+        padding: 15px;
+    }
+    
+    #board {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
+    
+    .cell {
+        font-size: 0.8em;
+        padding: 15px;
+        min-height: 100px;
+    }
+    
+    .logo {
+        max-width: 200px;
+    }
+    
+    .dice {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .face {
+        font-size: 1.5em;
+    }
+    
+    #roll-button {
+        padding: 10px 30px;
+        font-size: 1.1em;
+    }
+    
+    .modal-content {
+        padding: 30px;
+    }
+    
+    .modal h2 {
+        font-size: 1.6em;
+    }
+    
+    .modal p {
+        font-size: 1.1em;
+    }
+    
+    #close-modal {
+        padding: 8px 20px;
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 576px) {
+    #game-container {
+        max-width: 100%;
+        padding: 10px;
+    }
+    
+    #board {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .cell {
+        font-size: 0.75em;
+        padding: 10px;
+        min-height: 90px;
+    }
+    
+    .logo {
+        max-width: 150px;
+    }
+    
+    .dice-container {
+        gap: 20px;
+    }
+    
+    .dice {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .face {
+        font-size: 1.2em;
+    }
+    
+    #roll-button {
+        padding: 8px 25px;
+        font-size: 1em;
+    }
+    
+    .modal-content {
+        padding: 20px;
+    }
+    
+    .modal h2 {
+        font-size: 1.4em;
+    }
+    
+    .modal p {
+        font-size: 1em;
+    }
+    
+    #close-modal {
+        padding: 8px 20px;
+        font-size: 0.9em;
+    }
+}
+
+/* Адаптивність для високих екранів */
+@media (min-height: 900px) {
+    #game-container {
+        max-height: 90vh;
+    }
+    
+    .cell {
+        min-height: 130px;
+    }
+}
+
+/* Адаптивність для ландшафтної орієнтації на мобільних */
+@media (max-height: 500px) and (orientation: landscape) {
+    #game-container {
+        padding: 10px;
+    }
+    
+    #board {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+    
+    .cell {
+        min-height: 80px;
+        font-size: 0.7em;
+    }
+    
+    .logo {
+        max-width: 120px;
+        margin-bottom: 15px;
+    }
+    
+    .dice-container {
+        margin-bottom: 15px;
+    }
+}
+
+/* Адаптивність для пристроїв з високою щільністю пікселів */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .cell {
+        border-width: 1px;
+    }
+}
+
+/* Адаптивність для пристроїв з підтримкою hover */
+@media (hover: hover) {
+    .cell:hover {
+        transform: translateY(-5px) scale(1.02);
+    }
+    
+    #roll-button:hover {
+        transform: translateY(-3px);
+    }
+}
+
+/* Адаптивність для пристроїв без підтримки hover */
+@media (hover: none) {
+    .cell:active {
+        transform: translateY(-2px) scale(1.01);
+    }
+    
+    #roll-button:active {
+        transform: translateY(0);
+    }
+}
+
+/* Оновлена анімація хмар */
+@keyframes float-cloud {
+    0% { 
+        transform: translateX(-100px) translateY(0); 
+    }
+    25% {
+        transform: translateX(calc(25vw + 50px)) translateY(-10px);
+    }
+    50% {
+        transform: translateX(calc(50vw + 100px)) translateY(0);
+    }
+    75% {
+        transform: translateX(calc(75vw + 150px)) translateY(10px);
+    }
+    100% { 
+        transform: translateX(calc(100vw + 200px)) translateY(0); 
+    }
+}
+
+/* Падаючі зірки */
+.shooting-stars {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    display: none;
+}
+
+body.night-time .shooting-stars {
+    display: block;
+}
+
+@keyframes shooting-star {
+    0% {
+        transform: translateX(0) translateY(0) rotate(45deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(1000px) translateY(1000px) rotate(45deg);
+        opacity: 0;
+    }
+}
+
+/* Адаптивність для планшетів у портретному режимі */
+@media (max-width: 768px) and (orientation: portrait) {
+    #game-container {
+        transform: rotate(-5deg);
+        transform-origin: center center;
+        max-width: 600px;
+        padding: 15px;
+    }
+    
+    #board {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        transform: rotate(5deg);
+    }
+    
+    .cell {
+        font-size: 0.8em;
+        padding: 15px;
+        min-height: 100px;
+        transform: rotate(-2deg);
+    }
+    
+    .logo {
+        max-width: 200px;
+        transform: rotate(3deg);
+    }
+    
+    .dice-container {
+        transform: rotate(2deg);
+    }
+    
+    .dice {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .face {
+        font-size: 1.5em;
+    }
+    
+    #roll-button {
+        padding: 10px 30px;
+        font-size: 1.1em;
+        transform: rotate(-1deg);
+    }
+    
+    .modal-content {
+        padding: 30px;
+        transform: rotate(0deg);
+    }
+    
+    .modal h2 {
+        font-size: 1.6em;
+    }
+    
+    .modal p {
+        font-size: 1.1em;
+    }
+    
+    #close-modal {
+        padding: 8px 20px;
+        font-size: 0.9em;
+    }
+}
+
+/* Адаптивність для планшетів у ландшафтному режимі */
+@media (max-width: 768px) and (orientation: landscape) {
+    #game-container {
+        transform: rotate(0deg);
+        max-width: 800px;
+    }
+    
+    #board {
+        grid-template-columns: repeat(4, 1fr);
+        transform: rotate(0deg);
+    }
+    
+    .cell {
+        transform: rotate(0deg);
+    }
+    
+    .logo {
+        transform: rotate(0deg);
+    }
+    
+    .dice-container {
+        transform: rotate(0deg);
+    }
+    
+    #roll-button {
+        transform: rotate(0deg);
+    }
+}
+
+/* Сонце */
+.sun {
+    position: fixed;
+    width: 120px;
+    height: 120px;
+    background: #FFD700;
+    border-radius: 50%;
+    box-shadow: 0 0 60px #FFD700, 0 0 120px #FFD700, 0 0 180px #FFD700;
+    animation: sun-rays 3s infinite;
+    display: none;
+    z-index: 0;
+}
+
+body.day-time .sun {
+    display: block;
+}
+
+@keyframes sun-rays {
+    0% { box-shadow: 0 0 60px #FFD700, 0 0 120px #FFD700, 0 0 180px #FFD700; }
+    50% { box-shadow: 0 0 80px #FFD700, 0 0 160px #FFD700, 0 0 240px #FFD700; }
+    100% { box-shadow: 0 0 60px #FFD700, 0 0 120px #FFD700, 0 0 180px #FFD700; }
+}
+
+/* Хмари */
+.cloud {
+    position: fixed;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 100px;
+    box-shadow: 
+        0 8px 15px rgba(0, 0, 0, 0.1),
+        inset 0 -5px 15px rgba(0, 0, 0, 0.1);
+    animation: float-cloud 30s infinite linear;
+    display: none;
+    z-index: 0;
+}
+
+.cloud::before,
+.cloud::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+}
+
+.cloud::before {
+    width: 50%;
+    height: 100%;
+    top: -50%;
+    left: 25%;
+}
+
+.cloud::after {
+    width: 30%;
+    height: 75%;
+    top: -25%;
+    left: 10%;
+}
+
+body.day-time .cloud {
+    display: block;
+}
+
+.cloud:nth-child(1) { 
+    width: 120px; 
+    height: 50px; 
+    top: 15%; 
+    left: -120px; 
+    animation-delay: 0s;
+    transform: scale(1.2);
+}
+
+.cloud:nth-child(2) { 
+    width: 180px; 
+    height: 70px; 
+    top: 35%; 
+    left: -180px; 
+    animation-delay: 10s;
+    transform: scale(1.5);
+}
+
+.cloud:nth-child(3) { 
+    width: 150px; 
+    height: 60px; 
+    top: 55%; 
+    left: -150px; 
+    animation-delay: 5s;
+    transform: scale(1.3);
+}
+
+.cloud:nth-child(4) { 
+    width: 140px; 
+    height: 55px; 
+    top: 75%; 
+    left: -140px; 
+    animation-delay: 15s;
+    transform: scale(1.4);
+}
+
+/* Додаткові хмари */
+.cloud:nth-child(5) { 
+    width: 160px; 
+    height: 65px; 
+    top: 25%; 
+    left: -160px; 
+    animation-delay: 7s;
+    transform: scale(1.4);
+}
+
+.cloud:nth-child(6) { 
+    width: 130px; 
+    height: 45px; 
+    top: 45%; 
+    left: -130px; 
+    animation-delay: 12s;
+    transform: scale(1.1);
+}
+
+.cloud:nth-child(7) { 
+    width: 170px; 
+    height: 75px; 
+    top: 65%; 
+    left: -170px; 
+    animation-delay: 18s;
+    transform: scale(1.6);
+}
+
+.cloud:nth-child(8) { 
+    width: 145px; 
+    height: 58px; 
+    top: 85%; 
+    left: -145px; 
+    animation-delay: 22s;
+    transform: scale(1.3);
+}
+
+/* Додаткові хмари */
+.cloud:nth-child(9) { 
+    width: 155px; 
+    height: 62px; 
+    top: 15%; 
+    left: -155px; 
+    animation-delay: 25s;
+    transform: scale(1.4);
+}
+
+.cloud:nth-child(10) { 
+    width: 135px; 
+    height: 54px; 
+    top: 40%; 
+    left: -135px; 
+    animation-delay: 28s;
+    transform: scale(1.2);
+}
+
+.cloud:nth-child(11) { 
+    width: 165px; 
+    height: 66px; 
+    top: 60%; 
+    left: -165px; 
+    animation-delay: 31s;
+    transform: scale(1.5);
+}
+
+.cloud:nth-child(12) { 
+    width: 140px; 
+    height: 56px; 
+    top: 80%; 
+    left: -140px; 
+    animation-delay: 34s;
+    transform: scale(1.3);
+}
+
+.cloud:nth-child(13) { 
+    width: 150px; 
+    height: 60px; 
+    top: 25%; 
+    left: -150px; 
+    animation-delay: 37s;
+    transform: scale(1.4);
+}
+
+.cloud:nth-child(14) { 
+    width: 130px; 
+    height: 52px; 
+    top: 45%; 
+    left: -130px; 
+    animation-delay: 40s;
+    transform: scale(1.1);
+}
+
+.cloud:nth-child(15) { 
+    width: 160px; 
+    height: 64px; 
+    top: 65%; 
+    left: -160px; 
+    animation-delay: 43s;
+    transform: scale(1.6);
+}
+
+/* Місяць */
+.moon {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(45deg, #ffd700 0%, #fff8e1 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 20px #ffd700, 0 0 40px rgba(255, 215, 0, 0.3);
+    display: none;
+}
+
+body.night-time .moon {
+    display: block;
+}
+
+/* Зірки */
+.stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    display: none;
+}
+
+body.night-time .stars {
+    display: block;
+}
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 1.5s infinite ease-in-out;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.3); }
+}
+
+/* Птахи */
+.birds {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    display: none;
+}
+
+body.day-time .birds {
+    display: block;
+}
+
+.bird {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    animation: fly 15s linear infinite;
+}
+
+.bird::before,
+.bird::after {
+    content: '';
+    position: absolute;
+    width: 15px;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.6);
+    transform-origin: 0% 50%;
+    animation: wing 0.8s ease-in-out infinite;
+}
+
+.bird::before {
+    transform: rotate(45deg);
+}
+
+.bird::after {
+    transform: rotate(-45deg);
+}
+
+.bird:nth-child(1) { top: 20%; animation-delay: 0s; }
+.bird:nth-child(2) { top: 35%; animation-delay: 5s; }
+.bird:nth-child(3) { top: 50%; animation-delay: 10s; }
+
+@keyframes fly {
+    0% { left: -50px; }
+    100% { left: calc(100% + 50px); }
+}
+
+@keyframes wing {
+    0%, 100% { transform: rotate(45deg); }
+    50% { transform: rotate(25deg); }
+}
+
+/* Метелики */
+.butterflies {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    display: none;
+}
+
+body.day-time .butterflies {
+    display: block;
+}
+
+.butterfly {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background: transparent;
+    animation: flutter 20s linear infinite;
+}
+
+.butterfly::before,
+.butterfly::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 15px;
+    background: rgba(255, 182, 193, 0.7);
+    border-radius: 50% 50% 0 0;
+    transform-origin: 50% 100%;
+    animation: wings 0.6s ease-in-out infinite;
+}
+
+.butterfly::before {
+    left: -5px;
+}
+
+.butterfly::after {
+    right: -5px;
+    animation-delay: 0.3s;
+}
+
+.butterfly:nth-child(1) { top: 30%; animation-delay: 0s; }
+.butterfly:nth-child(2) { top: 45%; animation-delay: 8s; }
+.butterfly:nth-child(3) { top: 60%; animation-delay: 4s; }
+.butterfly:nth-child(4) { top: 75%; animation-delay: 12s; }
+
+@keyframes flutter {
+    0% { 
+        left: -50px; 
+        transform: translateY(0);
+    }
+    25% {
+        transform: translateY(-20px);
+    }
+    50% {
+        transform: translateY(0);
+    }
+    75% {
+        transform: translateY(20px);
+    }
+    100% { 
+        left: calc(100% + 50px);
+        transform: translateY(0);
+    }
+}
+
+@keyframes wings {
+    0%, 100% { transform: rotate(-20deg); }
+    50% { transform: rotate(20deg); }
+}
+
+/* Божа корівка */
+.ladybug {
+    position: fixed;
+    z-index: 1;
+    display: none;
+}
+
+body.day-time .ladybug {
+    display: block;
+    animation: ladybug-move 25s linear infinite;
+}
+
+.ladybug img {
+    width: 50px;
+    height: auto;
+}
+
+@keyframes ladybug-move {
+    0% {
+        left: -50px;
+        top: 30%;
+        transform: scale(1);
+    }
+    25% {
+        left: 25%;
+        top: 20%;
+        transform: scale(-1, 1);
+    }
+    50% {
+        left: 50%;
+        top: 40%;
+        transform: scale(1);
+    }
+    75% {
+        left: 75%;
+        top: 25%;
+        transform: scale(-1, 1);
+    }
+    100% {
+        left: calc(100% + 50px);
+        top: 30%;
+        transform: scale(1);
+    }
+}
+
+/* Кастомний метелик */
+.custom-butterfly {
+    position: fixed;
+    z-index: 1;
+    display: none;
+}
+
+body.day-time .custom-butterfly {
+    display: block;
+    animation: custom-butterfly-move 30s linear infinite;
+}
+
+.custom-butterfly img {
+    width: 60px;
+    height: auto;
+}
+
+@keyframes custom-butterfly-move {
+    0% {
+        left: -60px;
+        top: 60%;
+        transform: translateY(0) scale(1);
+    }
+    25% {
+        left: 25%;
+        top: 50%;
+        transform: translateY(-20px) scale(-1, 1);
+    }
+    50% {
+        left: 50%;
+        top: 70%;
+        transform: translateY(0) scale(1);
+    }
+    75% {
+        left: 75%;
+        top: 55%;
+        transform: translateY(20px) scale(-1, 1);
+    }
+    100% {
+        left: calc(100% + 60px);
+        top: 60%;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Медіа-запит для мобільних пристроїв */
+@media screen and (max-width: 768px) {
+    #game-container {
+        margin: 0;
+        padding: 15px;
+        border-radius: 0;
+        box-shadow: none;
+        width: 100%;
+        max-width: 100%;
+        transform: none !important;
+    }
+
+    #board {
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .cell {
+        padding: 10px;
+        min-height: 80px;
+        font-size: 0.8em;
+    }
+
+    .dice-container {
+        gap: 20px;
+    }
+
+    #roll-button {
+        padding: 12px 30px;
+        font-size: 1.1em;
+    }
+
+    .modal-content {
+        margin: 10px;
+        padding: 20px;
+        width: calc(100% - 20px);
+        max-width: 100%;
+    }
+}
+
+.dice.rolling {
+    animation: roll3D 1.5s ease;
+}
+
+@keyframes roll3D {
+    0% { transform: rotateX(0) rotateY(0) rotateZ(0); }
+    25% { transform: rotateX(90deg) rotateY(90deg) rotateZ(0); }
+    50% { transform: rotateX(180deg) rotateY(180deg) rotateZ(0); }
+    75% { transform: rotateX(270deg) rotateY(270deg) rotateZ(0); }
+    100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(0); }
+}
+
+.face.front  { transform: translateZ(30px); }
+.face.back   { transform: rotateY(180deg) translateZ(30px); }
+.face.right  { transform: rotateY(90deg) translateZ(30px); }
+.face.left   { transform: rotateY(-90deg) translateZ(30px); }
+.face.top    { transform: rotateX(90deg) translateZ(30px); }
+.face.bottom { transform: rotateX(-90deg) translateZ(30px); }
+
+/* Ночное время */
+.night-time {
+    background: linear-gradient(to bottom, #0c1445 0%, #1a237e 100%);
+}
+
+.night-time .cloud {
+    background: linear-gradient(to bottom, #2c3e50 0%, #34495e 100%);
+    opacity: 0.6;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.moon {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(45deg, #ffd700 0%, #fff8e1 100%);
+    border-radius: 50%;
+    box-shadow: 0 0 20px #ffd700, 0 0 40px rgba(255, 215, 0, 0.3);
+    display: none;
+}
+
+.night-time .moon {
+    display: block;
+}
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 1.5s infinite ease-in-out;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.3); }
+}
+
+.shooting-star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+}
+
+@keyframes shooting-star {
+    0% {
+        transform: translate(0, 0) rotate(-45deg) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(300px, 300px) rotate(-45deg) scale(0.1);
+        opacity: 0;
+    }
+}
+
+.night-time .stars {
+    display: block;
+}
+
+.night-time .shooting-stars {
+    display: block;
+}
+
+.stars, .shooting-stars {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: none;
+}
+
+/* Добавляем тень для контраста с темным фоном */
+.night-time .cell {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.night-time .dice {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+.night-time #roll-button {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+/* Анимация для падающих звезд */
+@keyframes meteor {
+    0% {
+        transform: translate(0, 0) rotate(-45deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(500px, 500px) rotate(-45deg);
+        opacity: 0;
+    }
+}
+
+.shooting-stars::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    animation: meteor 3s linear infinite;
+    animation-delay: calc(random() * 3s);
+} 
